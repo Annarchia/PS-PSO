@@ -113,7 +113,7 @@ def fitness(pos, n_particles, image):
     return fit
 
 if __name__ == "__main__":
-    plot_best_from_file(["complete/colours.npy","complete/contours.npy"],256,256)
+    plot_best_from_file(["best_swarm/colours.npy","best_swarm/contours.npy"],256,256)
 
 
 

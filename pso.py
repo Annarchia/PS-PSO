@@ -1,20 +1,19 @@
 import numpy as np
 
-
 class PSO:
     def __init__(self, 
-                swarm, 
-                v, 
-                fitness, 
-                w=.8, 
-                c1=2, 
-                c2=2, 
-                c3=1, 
-                c4=1, 
-                max_g=200,
+                swarm,  # Particles position
+                v,  # Particles velocity
+                fitness,  # Value of fitness(swarm)
+                w = .8,  # Inertial coefficient
+                c1 = 2,  # Cognitive coefficient
+                c2 = 2,  # Social (attractive) coefficient
+                c3 = 1,  # Social (repulsive from centroid)
+                c4 = 1,  # Social (repulsive from nearest neighbour)
+                max_g = 200, 
                 max_g_no_improvement = 100, 
                 auto_coefs = False, 
-                distancing = False, 
+                distancing = False,  # Set True to activate c3, c4
                 fit_weight = .5,
                 landscape = None):
         self.swarm = swarm
@@ -53,7 +52,6 @@ class PSO:
         self.l_bests = self.swarm
         self.l_bests_val = self.fitness(self.swarm, self.N, self.landscape)
         
-
     def __str__(self):
         return f'[{self.iter}] $w$:{self.w:.2f} - $c1$:{self.c1:.2f} - $c2$:{self.c2:.2f} - $c3$:{self.c3:.2f} - $c4$:{self.c4:.2f}'
 
@@ -73,7 +71,7 @@ class PSO:
         self.w =  self.w_max - self.w_max * t
         # cognitive and social components
         self.c1 = self.c1_max - self.c1_max * t
-        self.c2 = self.c2_max - self.c2_max * t
+        self.c2 = self.c2_max * t
         if self.distancing:
             self.c3 = self.c3_max * t
             self.c4 = self.c4_max * t
@@ -134,22 +132,20 @@ class PSO:
             if fits[i] < self.p_best_val[i]:
                 self.p_best_val[i] = fits[i]
                 self.p_best[i] = self.swarm[i]
-            # update social bests
+            # update social bests (list-based neighbourhood)
             if i == 0:
-                neighbors = [fits[n-1],fits[i],fits[i+1]]
-                neighbors_pos = [self.swarm[n-1], self.swarm[i], self.swarm[i+1]]
+                neighbours = [fits[n-1],fits[i],fits[i+1]]
+                neighbours_pos = [self.swarm[n-1], self.swarm[i], self.swarm[i+1]]
             elif i == n-1:
-                neighbors = [fits[i-1],fits[i],fits[0]]
-                neighbors_pos = [self.swarm[i-1], self.swarm[i], self.swarm[0]]
+                neighbours = [fits[i-1],fits[i],fits[0]]
+                neighbours_pos = [self.swarm[i-1], self.swarm[i], self.swarm[0]]
             else:
-                neighbors = [fits[i-1],fits[i],fits[i+1]]
-                neighbors_pos = [self.swarm[i-1], self.swarm[i], self.swarm[i+1]] 
-            self.l_bests_val[i] = np.min(neighbors)
-            self.l_bests[i] = neighbors_pos[np.argmin(neighbors)]
+                neighbours = [fits[i-1],fits[i],fits[i+1]]
+                neighbours_pos = [self.swarm[i-1], self.swarm[i], self.swarm[i+1]] 
+            self.l_bests_val[i] = np.min(neighbours)
+            self.l_bests[i] = neighbours_pos[np.argmin(neighbours)]
         
-        # update best swarm
-        #print(np.sum(fits) - self.coverage, self.best_fit + self.coverage)
-
+        # update best swarm       
         if (np.sum(fits) * self.fit_weight - self.coverage * (1-self.fit_weight)) < (self.best_fit * self.fit_weight - self.coverage * (1-self.fit_weight)):
             self.iter_no_improvement = 0
             self.best_fit = np.sum(fits)
